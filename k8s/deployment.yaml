@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: portfolio-container
-        image: your-dockerhub-username/portfolio:latest  # CHANGE THIS
+        image: rnkbansal/portfolio:latest  # CHANGE THIS
         ports:
         - containerPort: 80
         imagePullPolicy: Always
