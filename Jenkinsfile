@@ -2,22 +2,14 @@ pipeline {
     agent any
 
     environment {
-        // CHANGE THIS to your DockerHub Username (e.g., rnkbansal)
+        // Your Docker Hub details
         DOCKER_IMAGE = 'rnkbansal/portfolio' 
-        
-        // --- UPDATE THESE TWO LINES TO MATCH YOUR SCREENSHOT ---
-        
-        // 1. Use the ID exactly as seen in your screenshot
         REGISTRY_CRED = 'dockerhub-credentials' 
-        
-        // 2. Use the ID exactly as seen in your screenshot
         KUBECONFIG_CRED = 'kubeconfig'
     }
-    
-    // ... rest of the pipeline stages ...
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
                 checkout scm
             }
@@ -26,8 +18,10 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker build -t $DOCKER_IMAGE:latest .'
-                    sh 'docker tag $DOCKER_IMAGE:latest $DOCKER_IMAGE:$BUILD_NUMBER'
+                    echo 'Building Docker Image...'
+                    // Windows uses 'bat' instead of 'sh'
+                    bat "docker build -t %DOCKER_IMAGE%:latest ."
+                    bat "docker tag %DOCKER_IMAGE%:latest %DOCKER_IMAGE%:%BUILD_NUMBER%"
                 }
             }
         }
@@ -35,21 +29,32 @@ pipeline {
         stage('Push to Registry') {
             steps {
                 script {
+                    echo 'Pushing to Docker Hub...'
                     withCredentials([usernamePassword(credentialsId: REGISTRY_CRED, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                        sh 'echo $PASS | docker login -u $USER --password-stdin'
-                        sh 'docker push $DOCKER_IMAGE:latest'
-                        sh 'docker push $DOCKER_IMAGE:$BUILD_NUMBER'
+                        // Windows Login command
+                        bat "docker login -u %USER% -p %PASS%"
+                        bat "docker push %DOCKER_IMAGE%:latest"
+                        bat "docker push %DOCKER_IMAGE%:%BUILD_NUMBER%"
                     }
                 }
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy to K8s') {
             steps {
                 script {
-                    // Updates the image in the deployment to the new build tag
-                    sh "kubectl set image deployment/portfolio-deployment portfolio-container=$DOCKER_IMAGE:$BUILD_NUMBER"
-                    sh "kubectl rollout status deployment/portfolio-deployment"
+                    echo 'Deploying to Kubernetes...'
+                    withKubeConfig([credentialsId: KUBECONFIG_CRED]) {
+                        // Apply the deployment and service files
+                        bat "kubectl apply -f k8s/deployment.yaml"
+                        bat "kubectl apply -f k8s/service.yaml"
+                        
+                        // Force update the image
+                        bat "kubectl set image deployment/portfolio-deployment portfolio-container=%DOCKER_IMAGE%:%BUILD_NUMBER%"
+                        
+                        // Wait for rollout to finish
+                        bat "kubectl rollout status deployment/portfolio-deployment"
+                    }
                 }
             }
         }
