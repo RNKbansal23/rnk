@@ -259,12 +259,40 @@
                             </a>
                         </li>
 
+                        <!-- Project Item: The Portfolio Itself -->
+<li class="project-item active" data-filter-item data-category="devops">
+    <a href="https://github.com/rnkbansal23/portfolio-repo" target="_blank"> <!-- Link to your git repo -->
+        <figure class="project-img">
+            <div class="project-item-icon-box"><ion-icon name="logo-github"></ion-icon></div>
+            <!-- We use a placeholder image or a screenshot of your Jenkins Pipeline -->
+            <img src="assets/images/jenkin_arch.jpg" alt="CI/CD Pipeline Architecture" loading="lazy">
+        </figure>
+        <h3 class="project-title">This Portfolio (CI/CD Pipeline)</h3>
+        <p class="project-category">DevOps & Kubernetes</p>
+        
+        <!-- Technical Badge/Pills -->
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+            <span style="font-size:10px; padding:4px 8px; background:rgba(43, 125, 248, 0.2); color:#2b7df8; border-radius:4px;">Docker</span>
+            <span style="font-size:10px; padding:4px 8px; background:rgba(43, 125, 248, 0.2); color:#2b7df8; border-radius:4px;">Jenkins</span>
+            <span style="font-size:10px; padding:4px 8px; background:rgba(43, 125, 248, 0.2); color:#2b7df8; border-radius:4px;">K8s</span>
+        </div>
+
+        <p class="project-desc" style="margin-top:10px;">
+            I automated the deployment of this website. The pipeline builds the Docker image, pushes it to DockerHub, and updates the Kubernetes Deployment with zero downtime rolling updates.
+        </p>
+    </a>
+</li>
+
                     </ul>
                 </section>
             </article>
 <!-- i -->
         </div>
     </main>
+    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 11px; color: var(--text-light); text-align: center;">
+    <p>Deployed on <span style="color: var(--primary);">Kubernetes</span></p>
+    <p>Build: <span style="color: var(--text-white);">v1.0.5</span> (Jenkins)</p>
+</div>
 
     <!-- JS -->
     <script src="assets/js/script.js"></script>
