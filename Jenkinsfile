@@ -58,5 +58,16 @@ pipeline {
                 }
             }
         }
-    }
+
+        stage('Update Public Site') {
+            steps {
+                script {
+                    echo 'Triggering Render.com Deployment...'
+                    // Paste YOUR Render Deploy Hook URL below
+                    bat "curl -X POST https://api.render.com/deploy/srv-d50f82ogjchc73cb9vf0?key=GgIFhQQUEp8"
+                }
+            }
+        }
+    } // end stages
 }
+    
