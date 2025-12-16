@@ -166,11 +166,38 @@ body {
   border-radius: 6px; /* CHANGE: Roundness of Pill */
   font-size: 12px; 
   width: fit-content;
+
 }
 
+/* --- Social Icons Updates --- */
+.social-icons {
+    display: flex;
+    gap: 12px;
+    margin-top: 5px;
+    align-items: center; /* Ensures proper alignment */
+}
+
+/* Common style for both Ion Icons and Custom SVGs */
+.social-icons ion-icon,
+.social-icons .social-svg {
+    color: var(--text-light); /* Default Color */
+    font-size: 18px;    /* Size for Ionicon */
+    width: 18px;        /* Width for SVG */
+    height: 18px;       /* Height for SVG */
+    transition: 0.2s;
+    display: block;     /* Ensures no weird spacing */
+}
+
+/* Hover Effect for both */
+.social-icons a:hover ion-icon,
+.social-icons a:hover .social-svg {
+    color: var(--primary); /* Turns Gold/Yellow on hover (for Ionicon) */
+    fill: var(--primary);  /* Turns Gold/Yellow on hover (for SVG) */
+}
+/* 
 .social-icons { display: flex; gap: 12px; margin-top: 5px; }
 .social-icons a { color: var(--text-light); font-size: 18px; transition: 0.2s; }
-.social-icons a:hover { color: var(--primary); }
+.social-icons a:hover { color: var(--primary); } */
 
 .banner-right { display: flex; gap: 30px; text-align: right; }
 .contact-item { display: flex; flex-direction: column; gap: 4px; }
@@ -333,4 +360,85 @@ article.active { display: block; } /* Only show if active */
   .top-banner { flex-direction: column; align-items: flex-start; gap: 20px; }
   .banner-right { width: 100%; justify-content: space-between; text-align: left; }
   .doing-list { grid-template-columns: 1fr; }
+}
+/* --- ANIMATED PILL CONTAINER --- */
+.animated-pill {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-gray);
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex; /* Keeps items in a row */
+    align-items: center;
+    gap: 8px; /* Space between words and arrows */
+    margin-bottom: 8px;
+    overflow: hidden; /* Ensures arrows don't fly outside */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* --- TEXT ITEMS (Code, Container, Cloud) --- */
+.pill-text {
+    opacity: 0; /* Start hidden */
+    display: inline-block;
+    animation: textFade 5s infinite; /* 5s total cycle */
+}
+
+/* --- ARROW ITEMS (→) --- */
+.pill-arrow {
+    opacity: 0; /* Start hidden */
+    color: var(--primary); /* Gold color for arrows */
+    display: inline-block;
+    font-weight: bold;
+    animation: arrowSlide 5s infinite;
+}
+
+/* --- TIMING DELAYS (The Sequence) --- */
+/* Each item appears 0.6 seconds after the previous one */
+.delay-1 { animation-delay: 0.0s; } /* Code */
+.delay-2 { animation-delay: 0.6s; } /* Arrow 1 */
+.delay-3 { animation-delay: 1.2s; } /* Container */
+.delay-4 { animation-delay: 1.8s; } /* Arrow 2 */
+.delay-5 { animation-delay: 2.4s; } /* Cloud */
+
+/* --- KEYFRAMES (The Animation Logic) --- */
+
+/* 1. Text Animation: Fade In -> Wait -> Fade Out */
+@keyframes textFade {
+    0% {
+        opacity: 0;
+        transform: translateY(5px); /* Start slightly below */
+    }
+    10% {
+        opacity: 1;
+        transform: translateY(0); /* Appear */
+    }
+    80% {
+        opacity: 1; /* Stay visible */
+        transform: translateY(0);
+    }
+    90%, 100% {
+        opacity: 0; /* Fade out at the end */
+        transform: translateY(-5px); /* Move slightly up */
+    }
+}
+
+/* 2. Arrow Animation: Fade In + Slide Right -> Wait -> Fade Out */
+@keyframes arrowSlide {
+    0% {
+        opacity: 0;
+        transform: translateX(-10px); /* Start from left */
+    }
+    10% {
+        opacity: 1;
+        transform: translateX(0); /* Slide into place */
+    }
+    80% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    90%, 100% {
+        opacity: 0;
+        transform: translateX(5px); /* Slide out to right */
+    }
 }
