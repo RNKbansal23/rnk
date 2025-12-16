@@ -16,8 +16,8 @@ Unlike standard static sites, this project is a **Live DevOps Demo**. It is cont
 
 | Version | Provider | Description | Link |
 | :--- | :--- | :--- | :--- |
-| **Frontend Optimized** | **Vercel** | High-speed CDN delivery for instant loading. | [**Visit Vercel Site**](https://rajat-portfolio.vercel.app) |
-| **DevOps Demo** | **Render** | Docker container deployed via Jenkins Pipeline. | [**Visit Render Site**](https://rajat-portfolio.onrender.com) |
+| **Frontend Optimized** | **Vercel** | High-speed CDN delivery for instant loading. | [**Visit Vercel Site**](https://rnkbansal.vercel.app/) |
+| **DevOps Demo** | **Render** | Docker container deployed via Jenkins Pipeline. | [**Visit Render Site**](https://rnk-dy28.onrender.com/) |
 
 ---
 
