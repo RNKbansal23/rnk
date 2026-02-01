@@ -40,19 +40,21 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+       stage('Deploy to Kubernetes') {
             steps {
-                // Loading the kubeconfig file securely
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                     script {
                         echo "Deploying to Kubernetes..."
                         
-                        // 1. Update the image in the deployment
-                        // Note: We use 'portfolio-deployment' and 'portfolio-container' based on your YAML files
+                        // 1. First, CREATE the deployment/service if they don't exist
+                        sh "kubectl --insecure-skip-tls-verify=true --kubeconfig=$KUBECONFIG apply -f k8s/deployment.yaml"
+                        sh "kubectl --insecure-skip-tls-verify=true --kubeconfig=$KUBECONFIG apply -f k8s/service.yaml"
+                        
+                        // 2. Now UPDATE the image to the specific build number
                         sh "kubectl --insecure-skip-tls-verify=true --kubeconfig=$KUBECONFIG set image deployment/portfolio-deployment portfolio-container=${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
 
                         echo "Waiting for rollout..."
-                        // 2. Wait for it to finish
+                        // 3. Wait for success
                         sh "kubectl --insecure-skip-tls-verify=true --kubeconfig=$KUBECONFIG rollout status deployment/portfolio-deployment"
                     }
                 }
