@@ -2,12 +2,12 @@ pipeline {
     agent any
 
     environment {
-        // Your Docker Hub Image Name
-        DOCKER_IMAGE = 'rnkbansal/portfolio' 
-        
-        // Ensure these IDs match what you created in the NEW Jenkins Credentials
-        REGISTRY_CRED = 'dockerhub-credentials' 
-        KUBECONFIG_CRED = 'kubeconfig'
+        // Your Docker Hub Username
+        DOCKERHUB_USERNAME = "rnkbansal"
+        // The Project Name (Image Name)
+        APP_NAME = "portfolio"
+        // Combined Image Name
+        DOCKER_IMAGE_NAME = "${DOCKERHUB_USERNAME}/${APP_NAME}"
     }
 
     stages {
@@ -20,60 +20,61 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo 'Building Docker Image...'
-                    // Linux uses 'sh'
-                    sh "docker build -t $DOCKER_IMAGE:latest ."
-                    sh "docker tag $DOCKER_IMAGE:latest $DOCKER_IMAGE:$BUILD_NUMBER"
+                    echo "Building Docker image: ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+                    // Build the image
+                    sh "docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} ."
                 }
             }
         }
 
-        stage('Push to Registry') {
+        stage('Push to Docker Hub') {
             steps {
-                script {
-                    echo 'Pushing to Docker Hub...'
-                    withCredentials([usernamePassword(credentialsId: REGISTRY_CRED, passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                        // Standard Linux login command
-                        sh 'echo $PASS | docker login -u $USER --password-stdin'
-                        sh "docker push $DOCKER_IMAGE:latest"
-                        sh "docker push $DOCKER_IMAGE:$BUILD_NUMBER"
+                // Using the same credentials ID as your working reference
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    echo "Logging in to Docker Hub and pushing..."
+                    // Login
+                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                    // Push
+                    sh "docker push ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                // Loading the kubeconfig file securely
+                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+                    script {
+                        echo "Deploying to Kubernetes..."
+                        
+                        // 1. Update the image in the deployment
+                        // Note: We use 'portfolio-deployment' and 'portfolio-container' based on your YAML files
+                        sh "kubectl --insecure-skip-tls-verify=true --kubeconfig=$KUBECONFIG set image deployment/portfolio-deployment portfolio-container=${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+
+                        echo "Waiting for rollout..."
+                        // 2. Wait for it to finish
+                        sh "kubectl --insecure-skip-tls-verify=true --kubeconfig=$KUBECONFIG rollout status deployment/portfolio-deployment"
                     }
                 }
             }
         }
 
-        stage('Deploy to K8s') {
-            steps {
-                script {
-                    echo 'Deploying to Kubernetes...'
-                    
-                    // This tells the pipeline to use the 'kubectl' tool you configured in Step 3
-                    def kubectl = tool name: 'kubectl', type: 'kubernetes-org.jenkinsci.plugins.kubernetes.cli.KubectlTool'
-                    
-                    withKubeConfig([credentialsId: KUBECONFIG_CRED]) {
-                        // We use ${kubectl} variable to call the command
-                        sh "${kubectl} apply -f k8s/deployment.yaml"
-                        sh "${kubectl} apply -f k8s/service.yaml"
-                        
-                        // Force update the image
-                        sh "${kubectl} set image deployment/portfolio-deployment portfolio-container=$DOCKER_IMAGE:$BUILD_NUMBER"
-                        
-                        // Wait for rollout to finish
-                        sh "${kubectl} rollout status deployment/portfolio-deployment"
-                    }
-                }
-            }
-        }
-        
         stage('Update Public Site (Render)') {
             steps {
                 script {
-                    echo 'Triggering Render Deployment...'
-                    // PASTE YOUR RENDER HOOK URL BELOW
-                    // Linux has curl built-in, so this works natively
-                    sh "curl -X POST https://api.render.com/deploy/srv-YOUR-ID-HERE?key=YOUR-KEY-HERE"
+                    echo "Triggering Render.com Deployment..."
+                    // Replace the URL below with your actual Render Deploy Hook
+                    // Since this is Linux/BlueOcean, 'curl' works natively
+                    sh "curl -X POST https://api.render.com/deploy/srv-YOUR_RENDER_ID?key=YOUR_RENDER_KEY"
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            echo "Cleaning up..."
+            sh "docker logout"
         }
     }
 }
